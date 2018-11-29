@@ -25,12 +25,36 @@ public class OrderBook {
     	orderBook = new TreeMap<String, Object>();
     }
     
+    
     public void addBuyOrder(double bidPrice, long bidSize) { 		
     	if(orderBook.isEmpty()) {
     		orderBook.put(PriceFields.BID, bidPrice);
     		orderBook.put(PriceFields.BID_SIZE, bidSize);
+    	} else {
+    		if(orderBook.containsValue(bidPrice)) {
+    			String priceKey = getKeyFromValue(bidPrice); 
+    			String sizeKey = convertKey(priceKey);
+    			orderBook.put(sizeKey, (long)orderBook.get(sizeKey) + bidSize); 
+    		}
     	}
     }
+    
+    public String convertKey(String bid) {
+    	if(bid.equals("bid")) {
+    		return "BidSize";
+    	}
+    	return "BidSize" + bid.substring(3, bid.length()); 
+    }
+    
+    public String getKeyFromValue(Object value) {
+        for (String key : orderBook.keySet()) {
+        	if (orderBook.get(key).equals(value)) {
+        		return key;
+        	}
+        }
+        return null;
+    }
+    
     
     public TreeMap<String, Object> getOrderBook() {
     	return orderBook;
