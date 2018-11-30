@@ -43,26 +43,44 @@ public class OrderHandler {
     private Map<String, Object> publishChangedLevels(Map<Double, Long> initial) {
     	orderBook.sortOrderBook();
     	Map<String, Object> changedLevels = new TreeMap<String, Object>();
-    	for(Entry<Double, Long> pair : orderBook.entrySet()) {
-	        Double bidPrice = pair.getKey();
-	        Long bidSize = pair.getValue();
-	        int index = orderBook.getIndexFromKey(bidPrice);
-	        int oldIndex = getIndexFromKey(initial, bidPrice);
-	        
-	        if(index != oldIndex) {
-	        	String priceKey = "Bid" + ((index > 1) ? index : "");
-	        	String sizeKey = "BidSize" + ((index > 1) ? index : "");
-	        	changedLevels.put(priceKey, bidPrice);
-	        	changedLevels.put(sizeKey, bidSize);
-	        } else {
-	        
-		        if(initial.get(bidPrice) != bidSize) {	        	
-		        	String key = "BidSize" + ((index > 1) ? index : "");
-		        	changedLevels.put(key, bidSize);
+    	
+    	if(orderBook.size() >= initial.size()) {
+	    	for(Entry<Double, Long> pair : orderBook.entrySet()) {
+		        Double bidPrice = pair.getKey();
+		        Long bidSize = pair.getValue();
+		        int index = orderBook.getIndexFromKey(bidPrice);
+		        int oldIndex = getIndexFromKey(initial, bidPrice);
+		        
+		        if(index != oldIndex) {
+		        	String priceKey = "Bid" + ((index > 1) ? index : "");
+		        	String sizeKey = "BidSize" + ((index > 1) ? index : "");
+		        	changedLevels.put(priceKey, bidPrice);
+		        	changedLevels.put(sizeKey, bidSize);
+		        } else {
+		        
+			        if(initial.get(bidPrice) != bidSize) {	        	
+			        	String key = "BidSize" + ((index > 1) ? index : "");
+			        	changedLevels.put(key, bidSize);
+			        }
 		        }
-	        }
-	
-    	}    
+		
+	    	}
+    	} else {
+    		for(Entry<Double, Long> pair : initial.entrySet()) {
+		        Double bidPrice = pair.getKey();
+		        Long bidSize = pair.getValue();
+		        int index = orderBook.getIndexFromKey(bidPrice);
+		        int oldIndex = getIndexFromKey(initial, bidPrice);
+		        
+		        if(index != oldIndex) {
+		        	String priceKey = "Bid" + ((oldIndex > 1) ? oldIndex : "");
+		        	String sizeKey = "BidSize" + ((oldIndex > 1) ? oldIndex : "");
+		        	changedLevels.put(priceKey, null);
+		        	changedLevels.put(sizeKey, null);
+		        } 
+		
+	    	}
+    	}
         return changedLevels;
     }
     

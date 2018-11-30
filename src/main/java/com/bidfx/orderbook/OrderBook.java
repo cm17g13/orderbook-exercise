@@ -83,6 +83,10 @@ public class OrderBook {
     	return (Map<Double, Long>) orderBook.clone();
     }
     
+    public int size() {
+    	return orderBook.size();
+    }
+    
     public boolean containsKey(double key) {
     	return orderBook.containsKey(key);
     }
