@@ -55,8 +55,6 @@ class OrderHandlerTest {
         orderHandler.handleOrder(order1);
         Map<String, Object> changedLevels = orderHandler.handleOrder(order2);
         Map<Object, Object> expected = new TreeMap<>();
-        expected.put(PriceFields.BID, 729.0);
-        expected.put(PriceFields.BID_SIZE, 100L);
         expected.put(PriceFields.BID2, 728.9);
         expected.put(PriceFields.BID_SIZE2, 50L);
         assertEquals(expected, changedLevels);
