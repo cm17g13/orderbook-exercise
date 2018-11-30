@@ -45,43 +45,68 @@ public class OrderHandler {
     	Map<String, Object> changedLevels = new TreeMap<String, Object>();
     	
     	if(orderBook.size() >= initial.size()) {
-	    	for(Entry<Double, Long> pair : orderBook.entrySet()) {
-		        Double bidPrice = pair.getKey();
-		        Long bidSize = pair.getValue();
-		        int index = orderBook.getIndexFromKey(bidPrice);
-		        int oldIndex = getIndexFromKey(initial, bidPrice);
-		        
-		        if(index != oldIndex) {
-		        	String priceKey = "Bid" + ((index > 1) ? index : "");
-		        	String sizeKey = "BidSize" + ((index > 1) ? index : "");
-		        	changedLevels.put(priceKey, bidPrice);
-		        	changedLevels.put(sizeKey, bidSize);
-		        } else {
-		        
-			        if(initial.get(bidPrice) != bidSize) {	        	
-			        	String key = "BidSize" + ((index > 1) ? index : "");
-			        	changedLevels.put(key, bidSize);
-			        }
-		        }
-		
-	    	}
+    		changedLevels = addedOrder(changedLevels, initial);
     	} else {
-    		for(Entry<Double, Long> pair : initial.entrySet()) {
-		        Double bidPrice = pair.getKey();
-		        Long bidSize = pair.getValue();
-		        int index = orderBook.getIndexFromKey(bidPrice);
-		        int oldIndex = getIndexFromKey(initial, bidPrice);
-		        
-		        if(index != oldIndex) {
-		        	String priceKey = "Bid" + ((oldIndex > 1) ? oldIndex : "");
-		        	String sizeKey = "BidSize" + ((oldIndex > 1) ? oldIndex : "");
-		        	changedLevels.put(priceKey, null);
-		        	changedLevels.put(sizeKey, null);
-		        } 
-		
-	    	}
+    		changedLevels = canceledOrder(changedLevels, initial);
     	}
         return changedLevels;
+    }
+    
+    private Map<String, Object> addedOrder(Map<String, Object> changedLevels, Map<Double, Long> initial){
+    	for(Entry<Double, Long> pair : orderBook.entrySet()) {
+	        Double bidPrice = pair.getKey();
+	        Long bidSize = pair.getValue();
+	        int index = orderBook.getIndexFromKey(bidPrice);
+	        int oldIndex = getIndexFromPrice(initial, bidPrice);
+	        
+	        if(index != oldIndex) {
+	        	changedLevels = levelChange(changedLevels, index, bidPrice, bidSize);
+	        	
+	        } else if(initial.get(bidPrice) != bidSize)  {
+	        	changedLevels = sizeChange(changedLevels, index, bidSize);  
+	        }
+    	}
+    	return changedLevels;
+    }
+    
+    private Map<String, Object> canceledOrder(Map<String, Object> changedLevels, Map<Double, Long> initial){
+    	for(Entry<Double, Long> pair : initial.entrySet()) {
+	        Double bidPrice = pair.getKey();
+	        Long bidSize = pair.getValue();
+	        int oldIndex = getIndexFromPrice(initial, bidPrice);
+	        
+	        if(orderBook.getIndexFromKey(bidPrice) != oldIndex) {
+	        	changedLevels = levelRemoved(changedLevels, oldIndex);
+	        }
+    	}
+    	return changedLevels;
+    }
+    
+    private Map<String, Object> levelChange(Map<String, Object> changedLevels, int index, double bidPrice, long bidSize) {
+    	String priceKey = "Bid" + addKeyIndexing(index);
+    	String sizeKey = "BidSize" + addKeyIndexing(index);
+    	changedLevels.put(priceKey, bidPrice);
+    	changedLevels.put(sizeKey, bidSize);
+    	return changedLevels;
+    }
+    
+    private Map<String, Object> sizeChange(Map<String, Object> changedLevels, int index, long bidSize) {
+    	String sizeKey = "BidSize" + addKeyIndexing(index);
+    	changedLevels.put(sizeKey, bidSize);
+    	return changedLevels;
+    }
+    
+    private Map<String, Object> levelRemoved(Map<String, Object> changedLevels, int oldIndex) {
+    	String priceKey = "Bid" + addKeyIndexing(oldIndex);
+    	String sizeKey = "BidSize" + addKeyIndexing(oldIndex);
+    	changedLevels.put(priceKey, null);
+    	changedLevels.put(sizeKey, null);
+    	return changedLevels;
+    }
+    
+    
+    private String addKeyIndexing(int index) {
+    	return ((index > 1) ? Integer.toString(index) : "");
     }
     
     private long checkOrderSize(Order order) {
@@ -93,7 +118,7 @@ public class OrderHandler {
     	return -1; 
     }
     
-    public int getIndexFromKey(Map<Double, Long> map, double key1) {
+    public int getIndexFromPrice(Map<Double, Long> map, double key1) {
     	int count = 1;
     	for (Double key2 : map.keySet()) {
         	if (key1 == key2) {
