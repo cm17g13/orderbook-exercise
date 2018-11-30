@@ -4,6 +4,7 @@
 
 package com.bidfx.orderbook;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -19,16 +20,23 @@ import java.util.TreeMap;
 @SuppressWarnings("all")
 public class OrderHandler {
     private OrderBook orderBook = new OrderBook();
-
+    private ArrayList<Order> orders = new ArrayList<Order>();
+    
     public Map<String, Object> handleOrder(Order order) {
     	
     	Map<Double, Long> initial = orderBook.clone();
-    	System.out.println();
+    	
+    	long orderSize = order.getSize();
+    	if(orderSize == 0) {
+    		orderSize = checkOrderSize(order);
+    	} 
+    	
     	if(order.getSide() == Side.BID) {
-    		orderBook.addBuyOrder(order.getPrice(), order.getSize());
+    		orderBook.addBuyOrder(order.getPrice(), orderSize);
     	} else {
     		//orderBook.addSellOrder(order.getPrice(), order.getSize());
     	}
+    	orders.add(order);
     	return publishChangedLevels(initial);
     }
 
@@ -40,6 +48,7 @@ public class OrderHandler {
 	        Long bidSize = pair.getValue();
 	        int index = orderBook.getIndexFromKey(bidPrice);
 	        int oldIndex = getIndexFromKey(initial, bidPrice);
+	        
 	        if(index != oldIndex) {
 	        	String priceKey = "Bid" + ((index > 1) ? index : "");
 	        	String sizeKey = "BidSize" + ((index > 1) ? index : "");
@@ -55,6 +64,15 @@ public class OrderHandler {
 	
     	}    
         return changedLevels;
+    }
+    
+    private long checkOrderSize(Order order) {
+    	for (Order existingOrder : orders) {
+        	if (order.getOrderId() == existingOrder.getOrderId()) {
+        		return -existingOrder.getSize();
+        	}
+        }
+    	return -1; 
     }
     
     public int getIndexFromKey(Map<Double, Long> map, double key1) {
