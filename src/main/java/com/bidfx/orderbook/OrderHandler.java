@@ -33,7 +33,7 @@ public class OrderHandler {
     	
     	if(order.getSide() == Side.BID) {
     		orderBook.addBuyOrder(order.getPrice(), orderSize);
-    	} else {
+    	} else if(order.getSide() == Side.ASK) {
     		//orderBook.addSellOrder(order.getPrice(), order.getSize());
     	}
     	orders.add(order);
@@ -46,68 +46,67 @@ public class OrderHandler {
     	
     	if(orderBook.size() >= initial.size()) {
     		changedLevels = addedOrder(changedLevels, initial);
-    	} else {
+    	} else if(orderBook.size() < initial.size()) {
     		changedLevels = canceledOrder(changedLevels, initial);
-    	}
+    	} 
         return changedLevels;
     }
-    
+   
     private Map<String, Object> addedOrder(Map<String, Object> changedLevels, Map<Double, Long> initial){
     	for(Entry<Double, Long> pair : orderBook.entrySet()) {
 	        Double bidPrice = pair.getKey();
 	        Long bidSize = pair.getValue();
 	        int index = orderBook.getIndexFromKey(bidPrice);
 	        int oldIndex = getIndexFromPrice(initial, bidPrice);
-	        
+
 	        if(index != oldIndex) {
-	        	changedLevels = levelChange(changedLevels, index, bidPrice, bidSize);
-	        	
+	        	changedLevels = levelChange(changedLevels, addKeyIndexing(index), bidPrice, bidSize);	
 	        } else if(initial.get(bidPrice) != bidSize)  {
-	        	changedLevels = sizeChange(changedLevels, index, bidSize);  
+	        	changedLevels = sizeChange(changedLevels, addKeyIndexing(index), bidSize);  
 	        }
     	}
     	return changedLevels;
     }
     
     private Map<String, Object> canceledOrder(Map<String, Object> changedLevels, Map<Double, Long> initial){
-    	int count = 0; 
     	for(Entry<Double, Long> pair : initial.entrySet()) {
 	        Double bidPrice = pair.getKey();
 	        Long bidSize = pair.getValue();
 	        int index = orderBook.getIndexFromKey(bidPrice);
 	        int oldIndex = getIndexFromPrice(initial, bidPrice);
+	        
 	        if(index != oldIndex && index != -1) {
-	        	changedLevels = levelChange(changedLevels, index, bidPrice, bidSize);
+	        	changedLevels = levelChange(changedLevels, addKeyIndexing(index), bidPrice, bidSize);
 	        } else if(orderBook.getIndexFromKey(bidPrice) != oldIndex) {
-	        	changedLevels = levelRemoved(changedLevels, oldIndex);
+	        	changedLevels = levelRemoved(changedLevels, addKeyIndexing(oldIndex));
 	        }
     	}
     	return changedLevels;
     }
     
-    private Map<String, Object> levelChange(Map<String, Object> changedLevels, int index, double bidPrice, long bidSize) {
-    	String priceKey = "Bid" + addKeyIndexing(index);
-    	String sizeKey = "BidSize" + addKeyIndexing(index);
+    private Map<String, Object> levelChange(Map<String, Object> changedLevels, String indexing, double bidPrice, long bidSize) {
+    	String priceKey = "Bid" + indexing;
+    	String sizeKey = "BidSize" + indexing;
     	changedLevels.put(priceKey, bidPrice);
     	changedLevels.put(sizeKey, bidSize);
     	return changedLevels;
     }
     
-    private Map<String, Object> sizeChange(Map<String, Object> changedLevels, int index, long bidSize) {
-    	String sizeKey = "BidSize" + addKeyIndexing(index);
+    private Map<String, Object> sizeChange(Map<String, Object> changedLevels, String indexing, long bidSize) {
+    	String sizeKey = "BidSize" + indexing;
     	changedLevels.put(sizeKey, bidSize);
     	return changedLevels;
     }
     
-    private Map<String, Object> levelRemoved(Map<String, Object> changedLevels, int oldIndex) {
-    	String priceKey = "Bid" + addKeyIndexing(oldIndex);
-    	String sizeKey = "BidSize" + addKeyIndexing(oldIndex);
+    private Map<String, Object> levelRemoved(Map<String, Object> changedLevels, String oldIndexing) {
+    	String priceKey = "Bid" + oldIndexing;
+    	String sizeKey = "BidSize" + oldIndexing;
     	changedLevels.put(priceKey, null);
     	changedLevels.put(sizeKey, null);
     	return changedLevels;
     }
     
-    
+   
     private String addKeyIndexing(int index) {
     	return ((index > 1) ? Integer.toString(index) : "");
     }

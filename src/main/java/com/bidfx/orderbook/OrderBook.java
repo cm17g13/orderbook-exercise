@@ -48,15 +48,6 @@ public class OrderBook {
     	}
     }
     
-    public Double getKeyFromValue(Long value) {
-        for (double key : orderBook.keySet()) {
-        	if (orderBook.get(key).equals(value)) {
-        		return key;
-        	}
-        }
-        return null;
-    }
-    
     public int getIndexFromKey(double bidPrice) {
     	int count = 1;
     	for (double bid : orderBook.keySet()) {
@@ -68,6 +59,7 @@ public class OrderBook {
     	return -1;
     }
     
+    //As LinkedHashMaps are insertion order, a stream is used create a sorted OrderBook
     public void sortOrderBook() {
     	LinkedHashMap<Double, Long> sortedOrderBook = new LinkedHashMap<Double, Long>();
     	orderBook.entrySet()         
@@ -75,9 +67,7 @@ public class OrderBook {
         .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
         .forEachOrdered(entry -> sortedOrderBook.put(entry.getKey(), entry.getValue()));
     	orderBook = sortedOrderBook;
-    }
-    
-    
+    }   
     
     public Map<Double, Long> clone() {
     	return (Map<Double, Long>) orderBook.clone();
@@ -86,19 +76,7 @@ public class OrderBook {
     public int size() {
     	return orderBook.size();
     }
-    
-    public boolean containsKey(double key) {
-    	return orderBook.containsKey(key);
-    }
-    
-    public boolean containsValue(long value) {
-    	return orderBook.containsValue(value);
-    }
-    
-    public Object getValueFromKey(double key) {
-    	return orderBook.get(key);
-    }
-    
+   
     public Set<Entry<Double, Long>> entrySet() {
     	return orderBook.entrySet();
     }
