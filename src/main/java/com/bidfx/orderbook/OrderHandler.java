@@ -70,12 +70,15 @@ public class OrderHandler {
     }
     
     private Map<String, Object> canceledOrder(Map<String, Object> changedLevels, Map<Double, Long> initial){
+    	int count = 0; 
     	for(Entry<Double, Long> pair : initial.entrySet()) {
 	        Double bidPrice = pair.getKey();
 	        Long bidSize = pair.getValue();
+	        int index = orderBook.getIndexFromKey(bidPrice);
 	        int oldIndex = getIndexFromPrice(initial, bidPrice);
-	        
-	        if(orderBook.getIndexFromKey(bidPrice) != oldIndex) {
+	        if(index != oldIndex && index != -1) {
+	        	changedLevels = levelChange(changedLevels, index, bidPrice, bidSize);
+	        } else if(orderBook.getIndexFromKey(bidPrice) != oldIndex) {
 	        	changedLevels = levelRemoved(changedLevels, oldIndex);
 	        }
     	}
