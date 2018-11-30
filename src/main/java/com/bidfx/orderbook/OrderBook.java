@@ -4,8 +4,8 @@
 
 package com.bidfx.orderbook;
 
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,35 +19,32 @@ import java.util.Set;
 @SuppressWarnings("all")
 public class OrderBook {
 	
-	public TreeMap<String, Object> orderBook;
+	public LinkedHashMap<Double, Long> orderBook;
 	
     public OrderBook() {
-    	orderBook = new TreeMap<String, Object>();
+    	orderBook = new LinkedHashMap<Double, Long>();
     }
     
     
     public void addBuyOrder(double bidPrice, long bidSize) { 		
     	if(orderBook.isEmpty()) {
-    		orderBook.put(PriceFields.BID, bidPrice);
-    		orderBook.put(PriceFields.BID_SIZE, bidSize);
+    		orderBook.put(bidPrice, bidSize);
     	} else {
-    		if(orderBook.containsValue(bidPrice)) {
-    			String priceKey = getKeyFromValue(bidPrice); 
-    			String sizeKey = convertKey(priceKey);
-    			orderBook.put(sizeKey, (long)orderBook.get(sizeKey) + bidSize); 
+    		if(orderBook.containsKey(bidPrice)) {
+    			orderBook.put(bidPrice, orderBook.get(bidPrice) + bidSize); 
     		}
     	}
     }
     
-    public String convertKey(String bid) {
+    /*public String convertKey(String bid) {
     	if(bid.equals("bid")) {
     		return "BidSize";
     	}
     	return "BidSize" + bid.substring(3, bid.length()); 
-    }
+    }*/
     
-    public String getKeyFromValue(Object value) {
-        for (String key : orderBook.keySet()) {
+    public Double getKeyFromValue(Long value) {
+        for (double key : orderBook.keySet()) {
         	if (orderBook.get(key).equals(value)) {
         		return key;
         	}
@@ -55,28 +52,36 @@ public class OrderBook {
         return null;
     }
     
-    
-    public TreeMap<String, Object> getOrderBook() {
-    	return orderBook;
+    public int getIndexFromKey(double bidPrice) {
+    	int count = 0;
+    	for (double bid : orderBook.keySet()) {
+        	if (bidPrice == bid) {
+        		return count;
+        	}
+        	count++;
+        }
+    	return -1;
     }
     
-    public Map<String, Object> clone() {
-    	return (Map<String, Object>) orderBook.clone();
+    
+    
+    public Map<Double, Long> clone() {
+    	return (Map<Double, Long>) orderBook.clone();
     }
     
-    public boolean containsKey(String key) {
+    public boolean containsKey(double key) {
     	return orderBook.containsKey(key);
     }
     
-    public boolean containsValue(Object value) {
+    public boolean containsValue(long value) {
     	return orderBook.containsValue(value);
     }
     
-    public Object get(String key) {
+    public Object getValueFromKey(double key) {
     	return orderBook.get(key);
     }
     
-    public Set<Entry<String, Object>> entrySet() {
+    public Set<Entry<Double, Long>> entrySet() {
     	return orderBook.entrySet();
     }
     
