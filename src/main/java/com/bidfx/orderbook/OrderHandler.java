@@ -33,25 +33,24 @@ public class OrderHandler {
     }
 
     private Map<String, Object> publishChangedLevels(Map<Double, Long> initial) {
-    	
+    	orderBook.sortOrderBook();
     	Map<String, Object> changedLevels = new TreeMap<String, Object>();
     	for(Entry<Double, Long> pair : orderBook.entrySet()) {
 	        Double bidPrice = pair.getKey();
 	        Long bidSize = pair.getValue();
 	        int index = orderBook.getIndexFromKey(bidPrice);
-	        //System.out.println("index value :"+ index);
-	        //System.out.println("Old index value :"+ getIndexFromKey(initial, bidPrice));
-	   
-	        
-	        //if the new bidSize at a given price is different, the print the new BidSize
-	        if(initial.get(bidPrice) != bidSize) {	        	
-	        	String key = "BidSize" + ((index > 0) ? index : "");
-	        	changedLevels.put(key, bidSize);
-	        }
 	        int oldIndex = getIndexFromKey(initial, bidPrice);
 	        if(index != oldIndex) {
-	        	String key = "Bid" + ((index > 0) ? index : "");
-	        	changedLevels.put(key, bidPrice);
+	        	String priceKey = "Bid" + ((index > 1) ? index : "");
+	        	String sizeKey = "BidSize" + ((index > 1) ? index : "");
+	        	changedLevels.put(priceKey, bidPrice);
+	        	changedLevels.put(sizeKey, bidSize);
+	        } else {
+	        
+		        if(initial.get(bidPrice) != bidSize) {	        	
+		        	String key = "BidSize" + ((index > 1) ? index : "");
+		        	changedLevels.put(key, bidSize);
+		        }
 	        }
 	
     	}    
@@ -59,7 +58,7 @@ public class OrderHandler {
     }
     
     public int getIndexFromKey(Map<Double, Long> map, double key1) {
-    	int count = 0;
+    	int count = 1;
     	for (Double key2 : map.keySet()) {
         	if (key1 == key2) {
         		return count;
