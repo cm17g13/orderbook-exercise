@@ -35,7 +35,12 @@ public class OrderBook {
     		orderBook.put(bidPrice, bidSize);
     	} else {
     		if(orderBook.containsKey(bidPrice)) {
-    			orderBook.put(bidPrice, orderBook.get(bidPrice) + bidSize); 
+    			long totalBidSize = orderBook.get(bidPrice) + bidSize;
+    			if(totalBidSize == 0) {
+    				orderBook.remove(bidPrice);
+    			} else {
+    				orderBook.put(bidPrice, totalBidSize);
+    			}
     		} else {
     			orderBook.put(bidPrice, bidSize);
     		}
@@ -65,11 +70,10 @@ public class OrderBook {
     
     public void sortOrderBook() {
     	LinkedHashMap<Double, Long> sortedOrderBook = new LinkedHashMap<Double, Long>();
-    	orderBook.entrySet()                   // Set<Entry<String, String>>
-        .stream()                   // Stream<Entry<String, String>>
+    	orderBook.entrySet()         
+        .stream()
         .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
-        .forEachOrdered(entry -> 
-        sortedOrderBook.put(entry.getKey(), entry.getValue()));
+        .forEachOrdered(entry -> sortedOrderBook.put(entry.getKey(), entry.getValue()));
     	orderBook = sortedOrderBook;
     }
     
